@@ -1,0 +1,105 @@
+<?php
+/*
+* 将后台管理添加的数据源添加至队列，一天运行一次
+* 数据源类型包括：新闻、论坛、博客、平媒
+*/
+
+    $h=fopen('/root/seCrawler/my_cront_log','a');
+    $text=date("Y-m-d H:i:s",time())."  添加采集源到队列  \r\n";
+    fwrite($h,$text);
+    fclose($h);
+
+include('/var/www/html/conf_li.php');
+include('/var/www/html/connect_mysql.php');
+/*将信息保存到disque*/
+function push_disque($disque_domain, $disque_port, $quename, $data){
+	$disque = new Memcache;
+	if(!$sta=$disque -> connect($disque_domain,$disque_port))
+	{
+		return 201;//连接失败
+	}
+	if(!$disque -> set($quename,$data,0,0)){	
+		return 201;
+	}
+	return 200;
+}
+
+/*获得URL域名*/
+function get_domain($url){ 
+	$pattern = "/[w-] .(com|net|org|gov|cc|biz|info|cn)(.(cn|hk))*/"; 
+	preg_match($pattern, $url, $matches); 
+	if(count($matches) > 0){ 
+		return $matches[0]; 
+	}else{ 
+		$rs = parse_url($url); 
+		$main_url = $rs["host"]; 
+		if(!strcmp(long2ip(sprintf("%u",ip2long($main_url))),$main_url)) { 
+			return $main_url; 
+		}else{ 
+			$arr = explode(".",$main_url); 
+			$count=count($arr); 
+			$endArr = array("com","net","org","3322");//com.cn net.cn 等情况 
+			if (in_array($arr[$count-2],$endArr)){ 
+				$domain = $arr[$count-3].".".$arr[$count-2].".".$arr[$count-1]; 
+			}else{ 
+				$domain = $arr[$count-2].".".$arr[$count-1]; 
+			} 
+			return $domain; 
+		} 
+	}
+}
+
+
+/*配置disque域名 端口 队列名 数据*/
+$domain=$conf_li['disque_host'];
+$port=$conf_li['disque_port'];
+$name=$conf_li['disque_name'];
+
+$data = array(
+		"URL" => "",
+		"USINGPROXT" => "1",
+       		"DEEP" => "3",
+        	"FATHER" => "",
+        	"UPTIME" => "",
+        	"UPCYCLE" => "2",
+        	"PRIORITY" => "1",
+        	"PAGETYPR" => "2",
+        	"CHAINNUM" => "0",
+        	"ALLFETCHNUM" => "0",
+        	"ORGINAL" => "",
+        	"COOKIE" => 'NULL',
+        	"CLAWSUB" => '0',
+        	"RETRY" => "2",
+        	"FILE_TYPE" => "0",
+        	"FROM" => "0",
+        	"LANG" => "0",
+        	"NAME" => "",
+		"ISPROXY" => "0"
+	);
+
+//从数据库中获得种子参数
+$sql="select * from t_source where deleted=1";
+$res=mysqli_query($link,$sql);
+while($row = mysqli_fetch_array($res)){
+    if($row['cate_id']==1 || $row['cate_id']==4 || $row['cate_id']==2 || $row['cate_id']==2){
+        $data["URL"] = $row["url"];
+        $data["DEEP"] = $row["source_depth"];
+        $data["FATHER"] = $row["url"];
+        $data["PRIORITY"]=$row["level_id"];
+        $data["UPTIME"] = time();
+        $data["file_type"] = $row["cate_id"];
+        $data["FROM"] = $row["cate_id"];
+        //$data["CLAWSUB"]=$row["source_width"];
+        $data["NAME"] = $row["source_name"];
+        $data["ORGINAL"]=$row["url"];
+        $seed = "@\n";
+        foreach( $data as $key => $value){
+            $line = '@'.$key.':'.$value."\n";
+            $seed .= $line;
+        }
+        echo $seed; 
+        $state=push_disque($domain, $port, $name, $seed);
+    }
+}
+
+?>

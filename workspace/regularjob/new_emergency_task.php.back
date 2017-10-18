@@ -1,0 +1,43 @@
+<?php
+    /*定时执行脚本---元数据、突发、微博搜索、微博热门话题
+    */
+    $h=fopen('/root/seCrawler/my_cront_log','a');
+    $text=date("Y-m-d H:i:s",time())."  元搜索、突发、微博、热门微博爬虫  \r\n";
+    fwrite($h,$text);
+    fclose($h);
+    include('/var/www/html/conf_li.php');
+    $gc = new GearmanClient();
+    $gc->addServer($conf_li['gearman_host'],$conf_li['gearman_port']);
+
+    include("/var/www/html/connect_mysql.php");
+    $sql="select word from t_metas_word";
+    $res=mysqli_query($link,$sql);
+    $words="";
+    while($row=mysqli_fetch_array($res)){
+        $keyword=$row['word'];
+        //元数据爬取
+        $param = array('keyword'=>$keyword,'se'=>'baidu','pages'=>3,'sleep'=>5);
+        $request = $gc->do('keyword_spider',json_encode($param));
+
+        $param = array('keyword'=>$keyword,'se'=>'qihoo','pages'=>3,'sleep'=>5);
+        $request = $gc->do('keyword_spider',json_encode($param));
+
+        $param = array('keyword'=>$keyword,'se'=>'youdao','pages'=>3,'sleep'=>5);
+        $request = $gc->do('keyword_spider',json_encode($param));
+
+        $param = array('keyword'=>$keyword,'se'=>'sogou','pages'=>3,'sleep'=>5);
+        $request = $gc->do('keyword_spider',json_encode($param));
+      
+        //微博搜索
+        $param = array('keyword'=>$keyword,'se'=>'weibosearch','pages'=>1,'sleep'=>5);//{'msg':'www.ttlsa.com', 'sleep':5}
+        $request = $gc->do('weibo_spider',json_encode($param));
+    }
+
+    //突发事件爬取
+    $param = array('keyword'=>'','se'=>'','pages'=>1);//{'msg':'www.ttlsa.com', 'sleep':5}
+    $request = $gc->do('emergency_spider',json_encode($param));
+    //热门微博话题
+    $param = array('keyword'=>'','se'=>'weibohot','pages'=>5,'sleep'=>5);//{'msg':'www.ttlsa.com', 'sleep':5}
+    $request = $gc->do('weibo_spider',json_encode($param));
+
+?>
