@@ -16,3 +16,4 @@ class XingJueItem(scrapy.Item):
     text = scrapy.Field()
     pubDate = scrapy.Field()
     ending = scrapy.Field()
+    kind = scrapy.Field()
