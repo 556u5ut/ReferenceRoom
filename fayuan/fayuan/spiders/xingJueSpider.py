@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
+import re
 from fayuan.items import XingJueItem
 
 class xingJueSpider(scrapy.Spider):
@@ -45,4 +46,14 @@ class xingJueSpider(scrapy.Spider):
                 text = text + line
             item['text'] = text
             item['ending'] = response.xpath(u"//div[@style='font-size: 15pt; font-family: 宋体; text-align: right; margin: 0.5pt 36pt 0.5pt 0cm; line-height: 25pt']/text()").extract_first()
+
+        item['text'] = re.sub('\t','',item['text'])
+        item['text'] = re.sub('\n,'',item['text'])
+        item['text'] = re.sub(' ','',item['text'])
+        item['num'] = re.sub('\t','',item['num'])
+        item['num'] = re.sub('\n','',item['num'])
+        item['num'] = re.sub(' ','',item['num'])
+        item['ending'] = re.sub('\t','',item['ending'])
+        item['ending'] = re.sub('\n','',item['ending'])
+        item['ending'] = re.sub(' ','',item['ending'])
         yield item
