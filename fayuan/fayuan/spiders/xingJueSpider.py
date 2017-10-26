@@ -48,7 +48,7 @@ class xingJueSpider(scrapy.Spider):
             item['ending'] = response.xpath(u"//div[@style='font-size: 15pt; font-family: 宋体; text-align: right; margin: 0.5pt 36pt 0.5pt 0cm; line-height: 25pt']/text()").extract_first()
 
         item['text'] = re.sub('\t','',item['text'])
-        item['text'] = re.sub('\n,'',item['text'])
+        item['text'] = re.sub('\n','',item['text'])
         item['text'] = re.sub(' ','',item['text'])
         item['num'] = re.sub('\t','',item['num'])
         item['num'] = re.sub('\n','',item['num'])
