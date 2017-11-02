@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import scrapy
+import re
 from fayuan.items import XingJueItem
 
 class minCaiSpider(scrapy.Spider):
