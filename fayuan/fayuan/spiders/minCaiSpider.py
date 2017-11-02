@@ -2,8 +2,8 @@
 import scrapy
 from fayuan.items import XingJueItem
 
-class xingCaiSpider(scrapy.Spider):
-    name = 'xingCaiSpider'
+class minCaiSpider(scrapy.Spider):
+    name = 'minCaiSpider'
     start_urls = ['http://www.court.gov.cn/wenshu.html?keyword=%E6%B0%91%E4%BA%8B%E8%A3%81%E5%AE%9A%E4%B9%A6&caseid=&starttime=&stoptime=']
     for page in range(616,618):
         start_urls.append("http://www.court.gov.cn/paper/default/index/keyword/%E8%A1%8C%E6%94%BF%E8%A3%81%E5%AE%9A%E4%B9%A6/caseid//starttime//stoptime//page/"+str(page)+".html")
