@@ -13,7 +13,6 @@ class XingJueItem(scrapy.Item):
     # name = scrapy.Field()
     title = scrapy.Field()
     num = scrapy.Field()
-    text = scrapy.Field()
     pubDate = scrapy.Field()
     ending = scrapy.Field()
-    kind = scrapy.Field()
+    text = scrapy.Field()

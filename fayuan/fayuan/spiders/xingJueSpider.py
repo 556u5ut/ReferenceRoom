@@ -21,39 +21,41 @@ class xingJueSpider(scrapy.Spider):
         item = XingJueItem()
         item['title'] = response.xpath("//div[@class='title']/text()").extract_first()
         item['pubDate'] = response.xpath("//li[@class='fl print']/text()").extract_first()
+
         item['num'] = response.xpath(u"///div[@style='TEXT-ALIGN: right; LINE-HEIGHT: 25pt; MARGIN: 0.5pt 0cm;  FONT-FAMILY: 宋体;FONT-SIZE: 15pt; ']/text()").extract_first()
-        textList = response.xpath(u"//div[@style='LINE-HEIGHT: 25pt; TEXT-INDENT: 30pt; MARGIN: 0.5pt 0cm;FONT-FAMILY: 宋体; FONT-SIZE: 15pt;']/text()").extract()
-        text = ''
-        for line in textList:
-            text = text + line
-        item['text'] = text
+        item['text'] = response.xpath(u"//div[@style='LINE-HEIGHT: 25pt; TEXT-INDENT: 30pt; MARGIN: 0.5pt 0cm;FONT-FAMILY: 宋体; FONT-SIZE: 15pt;']/text()").extract()
         item['ending'] = response.xpath(u"//div[@style='TEXT-ALIGN: right; LINE-HEIGHT: 25pt; MARGIN: 0.5pt 36pt 0.5pt 0cm;FONT-FAMILY: 宋体; FONT-SIZE: 15pt; ']/text()").extract_first()
 
         if item['num'] is None:
             item['num'] = response.xpath(u"//div[@style='margin: 0.5pt 0cm; text-align: right; line-height: 25pt; font-family: 宋体; font-size: 15pt;' ]/text()").extract_first()
-            textList = response.xpath(u"//div[@style='margin: 0.5pt 0cm; line-height: 25pt; text-indent: 30pt; font-family: 宋体; font-size: 15pt;']/text()").extract()
-            text = ''
-            for line in textList:
-                text = text + line
-            item['text'] = text
+            item['text'] = response.xpath(u"//div[@style='margin: 0.5pt 0cm; line-height: 25pt; text-indent: 30pt; font-family: 宋体; font-size: 15pt;']/text()").extract()
             item['ending'] = response.xpath(u"//div[@style='margin: 0.5pt 36pt 0.5pt 0cm; text-align: right; line-height: 25pt; font-family: 宋体; font-size: 15pt;']/text()").extract_first()
 
-        if item['text']=="":
+        if item['num'] is None:
             item['num'] = response.xpath(u"//div[@style='font-size: 15pt; font-family: 宋体; text-align: right; margin: 0.5pt 0cm; line-height: 25pt']/text()").extract_first()
-            textList = response.xpath(u"//div[@style='font-size: 15pt; font-family: 宋体; margin: 0.5pt 0cm; line-height: 25pt; text-indent: 30pt']/text()").extract()
-            text=''
-            for line in textList:
-                text = text + line
-            item['text'] = text
+            item['text'] = response.xpath(u"//div[@style='font-size: 15pt; font-family: 宋体; margin: 0.5pt 0cm; line-height: 25pt; text-indent: 30pt']/text()").extract()
             item['ending'] = response.xpath(u"//div[@style='font-size: 15pt; font-family: 宋体; text-align: right; margin: 0.5pt 36pt 0.5pt 0cm; line-height: 25pt']/text()").extract_first()
 
-        item['text'] = re.sub('\t','',item['text'])
+        text = ''
+        for line in item['text']:
+            text = text + line
+        item['text'] = text
+
         item['text'] = re.sub('\n','',item['text'])
+        item['text'] = re.sub('\t','',item['text'])
         item['text'] = re.sub(' ','',item['text'])
-        item['num'] = re.sub('\t','',item['num'])
-        item['num'] = re.sub('\n','',item['num'])
-        item['num'] = re.sub(' ','',item['num'])
-        item['ending'] = re.sub('\t','',item['ending'])
-        item['ending'] = re.sub('\n','',item['ending'])
-        item['ending'] = re.sub(' ','',item['ending'])
+
+        if item['num'] is not None:
+            item['num'] = re.sub('\n','',item['num'])
+            item['num'] = re.sub('\t','',item['num'])
+            item['num'] = re.sub(' ','',item['num'])
+        else:
+            item['num'] = ''
+
+        if item['ending'] is not None:
+            item['ending'] = re.sub('\n','',item['ending'])
+            item['ending'] = re.sub('\t','',item['ending'])
+            item['ending'] = re.sub(' ','',item['ending'])
+        else:
+            item['ending'] = ''
         yield item
