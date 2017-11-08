@@ -7,8 +7,8 @@ import json
 import time
 
 #帐号与密码
-user = '568793056'
-password = 'lwn18710990068@'
+user = ''
+password = ''
 
 #有时候会定向到腾讯主页，再运行一次即可
 
